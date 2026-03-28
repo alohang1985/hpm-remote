@@ -339,8 +339,15 @@ $("btn-markup").addEventListener("click", async () => {
       showStatus("✅ 마크업 데이터 수집 완료!", "success");
 
       // 요약 표시
+      const minColor = d.minProfit < 0 ? "#ef4444" : "#10b981";
       $("adjust-summary").innerHTML = `
-        <b>${d.hotelName}</b> · ${d.count}개 항목 · 평균수익 <b>${d.avgProfit.toLocaleString()}원</b> · 환율 ${d.rate}
+        <div style="font-weight:700;font-size:13px;margin-bottom:6px;">${d.hotelName}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span>평균: <b style="color:#f59e0b">${d.avgProfit.toLocaleString()}원</b> (${d.avgPct}%)</span>
+          <span>최소: <b style="color:${minColor}">${d.minProfit.toLocaleString()}원</b></span>
+          <span>최대: <b style="color:#10b981">${d.maxProfit.toLocaleString()}원</b></span>
+        </div>
+        <div style="color:#707070;font-size:11px;margin-top:4px;">${d.count}개 항목 · 환율 ${d.rate}</div>
       `;
       $("adjust-area").style.display = "block";
       $("adjust-preview").style.display = "none";
