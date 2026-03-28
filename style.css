@@ -1,0 +1,260 @@
+/* HPM 리모컨 — 모바일 최적화 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1a1a;
+  --surface: #2a2a2a;
+  --surface2: #333333;
+  --border: #404040;
+  --text: #ececec;
+  --text-sub: #a0a0a0;
+  --accent: #d97706;
+  --accent2: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --radius: 12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* 헤더 */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 8px;
+}
+header h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.status.online {
+  background: rgba(16,185,129,0.15);
+  color: #34d399;
+}
+.status.offline {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+}
+
+/* 카드 */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.card label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--accent2);
+}
+
+/* 입력 */
+select, input[type="date"], input[type="number"], input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  -webkit-appearance: none;
+}
+select:focus, input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(217,119,6,0.2);
+}
+
+/* 행 */
+.row {
+  display: flex;
+  gap: 8px;
+}
+.field {
+  flex: 1;
+}
+
+/* 버튼 */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 6px;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-sub);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  padding: 8px;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 액션 그리드 */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.actions .btn { margin-bottom: 0; }
+
+/* 상태 메시지 */
+.status-msg {
+  font-size: 13px;
+  padding: 8px 0;
+  text-align: center;
+  color: var(--accent2);
+}
+.status-msg.error { color: var(--danger); }
+.status-msg.success { color: var(--success); }
+
+/* 결과 테이블 */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.result-table th {
+  text-align: left;
+  padding: 6px 8px;
+  background: var(--bg);
+  color: var(--text-sub);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+.result-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.result-table tr:active {
+  background: var(--surface2);
+}
+
+.price-tp { color: var(--success); font-weight: 700; }
+.price-pt { color: var(--accent2); }
+.price-gh { color: #a78bfa; }
+.price-diff-up { color: var(--danger); font-size: 11px; }
+.price-diff-down { color: var(--success); font-size: 11px; }
+
+/* 룸 카드 */
+.room-card {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+.room-name {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.room-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+}
+.room-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.vendor-label {
+  color: var(--text-sub);
+  min-width: 50px;
+}
+.vendor-price {
+  font-weight: 600;
+  font-family: "SF Mono", monospace;
+}
+.vendor-diff {
+  font-size: 11px;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* 로딩 스피너 */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 푸터 */
+footer {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+/* 스크롤 영역 */
+.scroll-area {
+  max-height: 400px;
+  overflow-y: auto;
+}

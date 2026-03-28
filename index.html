@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HPM 리모컨</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 연결 상태 -->
+  <header id="header">
+    <h1>🏨 HPM 리모컨</h1>
+    <span id="pc-status" class="status offline">🔴 PC 오프라인</span>
+  </header>
+
+  <!-- 호텔 선택 -->
+  <section class="card">
+    <label>호텔 선택</label>
+    <select id="hotel-select">
+      <option value="">호텔 목록 로딩중...</option>
+    </select>
+  </section>
+
+  <!-- 날짜 선택 -->
+  <section class="card">
+    <div class="row">
+      <div class="field">
+        <label>체크인</label>
+        <input type="date" id="checkin">
+      </div>
+      <div class="field">
+        <label>체크아웃</label>
+        <input type="date" id="checkout">
+      </div>
+    </div>
+  </section>
+
+  <!-- 액션 버튼 -->
+  <section class="card actions">
+    <button id="btn-crawl" class="btn btn-primary">🔍 크롤링</button>
+    <button id="btn-latest" class="btn btn-secondary">📊 현황 조회</button>
+    <button id="btn-sync" class="btn btn-ghost">🔄 호텔 동기화</button>
+  </section>
+
+  <!-- 상태 메시지 -->
+  <section id="status-area" class="card" style="display:none;">
+    <div id="status-msg" class="status-msg"></div>
+  </section>
+
+  <!-- 결과 영역 -->
+  <section id="result-area" style="display:none;">
+    <div class="card">
+      <h2 id="result-title">결과</h2>
+      <div id="result-content"></div>
+    </div>
+  </section>
+
+  <footer>
+    <small>HPM Remote v1.0 · Firebase RTDB</small>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
