@@ -45,9 +45,16 @@
         <input type="date" id="checkin">
       </div>
       <div class="field">
-        <label>체크아웃</label>
-        <input type="date" id="checkout">
+        <label>체크아웃 (자동)</label>
+        <input type="date" id="checkout" style="opacity:0.6;">
       </div>
+    </div>
+    <div class="nights-row" style="display:flex;gap:4px;margin-top:8px;">
+      <button class="btn-night active" data-nights="1">1박</button>
+      <button class="btn-night" data-nights="2">2박</button>
+      <button class="btn-night" data-nights="3">3박</button>
+      <button class="btn-night" data-nights="4">4박</button>
+      <button class="btn-night" data-nights="5">5박</button>
     </div>
   </section>
 

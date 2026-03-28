@@ -17,7 +17,7 @@ async function rtdbPut(path, data) {
 }
 
 // ── 결과 대기 (polling) ──
-async function waitResult(cmdId, timeoutMs = 60000) {
+async function waitResult(cmdId, timeoutMs = 120000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const result = await rtdbGet(`results/${cmdId}`);
@@ -30,7 +30,7 @@ async function waitResult(cmdId, timeoutMs = 60000) {
     }
     await sleep(1500);
   }
-  return { status: "error", error: "시간 초과 (60초)" };
+  return { status: "error", error: "시간 초과" };
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -105,7 +105,7 @@ function getSelectedHotel() {
   return window.__hotels?.[idx] || null;
 }
 
-// ── 날짜 초기화 ──
+// ── 날짜 초기화 + 체크인 변경 시 체크아웃 자동 +1일 ──
 function initDates() {
   const today = new Date();
   const tomorrow = new Date(today);
@@ -113,6 +113,26 @@ function initDates() {
 
   $("checkin").value = today.toISOString().split("T")[0];
   $("checkout").value = tomorrow.toISOString().split("T")[0];
+
+  // 체크인 변경 시 체크아웃 자동 업데이트
+  $("checkin").addEventListener("change", () => updateCheckout());
+
+  // 박수 버튼
+  let selectedNights = 1;
+  document.querySelectorAll(".btn-night").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".btn-night").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedNights = parseInt(btn.dataset.nights);
+      updateCheckout();
+    });
+  });
+
+  function updateCheckout() {
+    const ci = new Date($("checkin").value);
+    ci.setDate(ci.getDate() + selectedNights);
+    $("checkout").value = ci.toISOString().split("T")[0];
+  }
 }
 
 // ── 크롤링 결과 렌더링 ──
