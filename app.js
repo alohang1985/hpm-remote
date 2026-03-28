@@ -344,8 +344,8 @@ $("btn-markup").addEventListener("click", async () => {
         <div style="font-weight:700;font-size:13px;margin-bottom:6px;">${d.hotelName}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <span>평균: <b style="color:#f59e0b">${d.avgProfit.toLocaleString()}원</b> (${d.avgPct}%)</span>
-          <span>최소: <b style="color:${minColor}">${d.minProfit.toLocaleString()}원</b></span>
-          <span>최대: <b style="color:#10b981">${d.maxProfit.toLocaleString()}원</b></span>
+          <span>최소: <b style="color:${minColor}">${d.minProfit.toLocaleString()}원</b> (${d.minPct}%)</span>
+          <span>최대: <b style="color:#10b981">${d.maxProfit.toLocaleString()}원</b> (${d.maxPct}%)</span>
         </div>
         <div style="color:#707070;font-size:11px;margin-top:4px;">${d.count}개 항목 · 환율 ${d.rate}</div>
       `;
