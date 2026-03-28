@@ -1,6 +1,19 @@
 /* HPM 리모컨 — 모바일 최적화 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* 잠금 화면 */
+#lock-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #1a1a1a;
+  display: flex; justify-content: center; align-items: center;
+  z-index: 9999;
+}
+.lock-box {
+  text-align: center;
+  padding: 30px;
+  width: 300px;
+}
+
 :root {
   --bg: #1a1a1a;
   --surface: #2a2a2a;

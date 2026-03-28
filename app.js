@@ -1,6 +1,7 @@
 /* HPM 리모컨 — Firebase RTDB REST API */
 
 const RTDB_URL = "https://hpm-remote-default-rtdb.asia-southeast1.firebasedatabase.app";
+const REMOTE_PASSCODE = "168402";
 
 // ── Firebase REST 헬퍼 ──
 async function rtdbGet(path) {
@@ -13,18 +14,6 @@ async function rtdbPut(path, data) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
-}
-
-// ── 명령 전송 ──
-async function sendCommand(action, params = {}) {
-  const cmdId = `cmd_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  await rtdbPut(`commands/${cmdId}`, {
-    action,
-    params,
-    status: "pending",
-    timestamp: Date.now()
-  });
-  return cmdId;
 }
 
 // ── 결과 대기 (polling) ──
@@ -279,13 +268,59 @@ $("btn-sync").addEventListener("click", async () => {
   btn.disabled = false;
 });
 
+// ── 잠금 화면 ──
+function checkLock() {
+  const saved = sessionStorage.getItem("hpm_remote_unlocked");
+  if (saved === "true") {
+    unlock();
+    return;
+  }
+  $("lock-screen").style.display = "flex";
+  $("main-app").style.display = "none";
+}
+
+function unlock() {
+  sessionStorage.setItem("hpm_remote_unlocked", "true");
+  $("lock-screen").style.display = "none";
+  $("main-app").style.display = "block";
+  initApp();
+}
+
+$("lock-btn").addEventListener("click", () => {
+  const input = $("lock-input").value;
+  if (input === REMOTE_PASSCODE) {
+    unlock();
+  } else {
+    $("lock-msg").textContent = "비밀번호가 틀렸습니다";
+    $("lock-input").value = "";
+    $("lock-input").focus();
+  }
+});
+
+$("lock-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("lock-btn").click();
+});
+
+// ── 명령에 인증키 포함 ──
+async function sendCommand(action, params = {}) {
+  const cmdId = `cmd_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  await rtdbPut(`commands/${cmdId}`, {
+    action,
+    params,
+    authKey: REMOTE_PASSCODE,
+    status: "pending",
+    timestamp: Date.now()
+  });
+  return cmdId;
+}
+
 // ── 초기화 ──
-async function init() {
+async function initApp() {
   initDates();
   await checkPcStatus();
   await loadHotels();
-  // 5초마다 PC 상태 확인
   setInterval(checkPcStatus, 5000);
 }
 
-init();
+// 시작
+checkLock();

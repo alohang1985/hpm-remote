@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- 🔒 비밀번호 잠금 화면 -->
+  <div id="lock-screen">
+    <div class="lock-box">
+      <div style="font-size:48px;margin-bottom:12px">🔒</div>
+      <h2 style="margin-bottom:4px;font-size:18px;">HPM 리모컨</h2>
+      <p style="color:#999;font-size:12px;margin-bottom:20px;">비밀번호를 입력하세요</p>
+      <input type="password" id="lock-input" placeholder="비밀번호" inputmode="numeric" maxlength="10"
+        style="width:100%;padding:12px;border-radius:8px;border:1px solid #404040;background:#1a1a1a;color:#ececec;font-size:18px;text-align:center;letter-spacing:8px;">
+      <button id="lock-btn" class="btn btn-primary" style="margin-top:12px;">접속</button>
+      <p id="lock-msg" style="color:#ef4444;font-size:12px;margin-top:8px;min-height:16px;"></p>
+    </div>
+  </div>
+
+  <!-- 메인 앱 (잠금 해제 후 표시) -->
+  <div id="main-app" style="display:none;">
+
   <!-- 연결 상태 -->
   <header id="header">
     <h1>🏨 HPM 리모컨</h1>
@@ -58,6 +74,8 @@
   <footer>
     <small>HPM Remote v1.0 · Firebase RTDB</small>
   </footer>
+
+  </div><!-- /main-app -->
 
   <script type="module" src="app.js"></script>
 </body>
