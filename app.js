@@ -315,6 +315,144 @@ $("btn-sync").addEventListener("click", async () => {
   btn.disabled = false;
 });
 
+// ── 마크업 점검 ──
+let __currentMarkupHotelId = null;
+
+$("btn-markup").addEventListener("click", async () => {
+  const hotel = getSelectedHotel();
+  if (!hotel) { showStatus("호텔을 선택해주세요", "error"); return; }
+
+  const btn = $("btn-markup");
+  btn.disabled = true;
+  btn.textContent = "⏳ 마크업 로딩 중...";
+  showStatus(`<span class="spinner"></span> ${hotel.name} 마크업 페이지 로딩 중...`, "");
+  $("adjust-area").style.display = "none";
+  hideResult();
+
+  try {
+    const cmdId = await sendCommand("markupFetch", { hotelId: hotel.id });
+    const result = await waitResult(cmdId);
+
+    if (result.status === "done" && result.data && result.data.rows) {
+      const d = result.data;
+      __currentMarkupHotelId = hotel.id;
+      showStatus("✅ 마크업 데이터 수집 완료!", "success");
+
+      // 요약 표시
+      $("adjust-summary").innerHTML = `
+        <b>${d.hotelName}</b> · ${d.count}개 항목 · 평균수익 <b>${d.avgProfit.toLocaleString()}원</b> · 환율 ${d.rate}
+      `;
+      $("adjust-area").style.display = "block";
+      $("adjust-preview").style.display = "none";
+      $("btn-adjust-run").style.display = "none";
+    } else {
+      showStatus(`❌ ${result.data?.error || result.error || "마크업 데이터 수집 실패"}`, "error");
+    }
+  } catch (e) {
+    showStatus(`❌ 오류: ${e.message}`, "error");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "💰 마크업 점검";
+});
+
+// ── 프리셋 버튼 ──
+document.querySelectorAll(".btn-preset").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    $("adjust-mode").value = btn.dataset.mode;
+    $("adjust-target").value = btn.dataset.val;
+    $("adjust-target").step = btn.dataset.mode === "pct" ? "0.1" : "100";
+  });
+});
+
+// ── 미리보기 ──
+$("btn-adjust-preview").addEventListener("click", async () => {
+  if (!__currentMarkupHotelId) { showStatus("먼저 마크업 점검을 해주세요", "error"); return; }
+
+  const mode = $("adjust-mode").value;
+  const value = parseFloat($("adjust-target").value) || 0;
+  const btn = $("btn-adjust-preview");
+  btn.disabled = true;
+  showStatus(`<span class="spinner"></span> 미리보기 계산 중...`, "");
+
+  try {
+    const cmdId = await sendCommand("bulkAdjust", {
+      hotelId: __currentMarkupHotelId, mode, value, preview: true
+    });
+    const result = await waitResult(cmdId, 30000);
+
+    if (result.status === "done" && result.data && result.data.preview) {
+      const d = result.data;
+      const diff = d.totalAfter - d.totalBefore;
+      const diffSign = diff >= 0 ? "+" : "";
+
+      let html = `<div style="font-size:12px;color:#a0a0a0;margin-bottom:6px;">
+        총수익: ${d.totalBefore.toLocaleString()}원 → <b style="color:${diff >= 0 ? "#10b981" : "#ef4444"}">${d.totalAfter.toLocaleString()}원</b> (${diffSign}${diff.toLocaleString()}원) · ${d.totalChanged}개 변경
+      </div>`;
+
+      if (d.preview.length) {
+        html += '<div style="max-height:200px;overflow-y:auto;"><table class="adjust-table"><thead><tr><th>룸</th><th>현SALE</th><th>신SALE</th><th>수익₩</th></tr></thead><tbody>';
+        d.preview.forEach(r => {
+          const cls = r.newProfit < 0 ? "neg" : "pos";
+          html += `<tr>
+            <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.roomName}">${r.roomName || "-"}</td>
+            <td>${r.sale.toLocaleString()}</td>
+            <td><b>${r.newSale.toLocaleString()}</b></td>
+            <td class="${cls}">${r.newProfit.toLocaleString()}</td>
+          </tr>`;
+        });
+        html += '</tbody></table></div>';
+      }
+
+      $("adjust-preview").innerHTML = html;
+      $("adjust-preview").style.display = "block";
+      $("btn-adjust-run").style.display = "block";
+      showStatus(`📋 ${d.totalChanged}개 변경 예정`, "");
+    } else {
+      showStatus(`❌ ${result.data?.error || result.error || "미리보기 실패"}`, "error");
+    }
+  } catch (e) {
+    showStatus(`❌ 오류: ${e.message}`, "error");
+  }
+
+  btn.disabled = false;
+});
+
+// ── 실행 (저장) ──
+$("btn-adjust-run").addEventListener("click", async () => {
+  if (!__currentMarkupHotelId) return;
+  if (!confirm("정말 실행하시겠습니까? SALE 값이 변경되고 저장됩니다.")) return;
+
+  const mode = $("adjust-mode").value;
+  const value = parseFloat($("adjust-target").value) || 0;
+  const btn = $("btn-adjust-run");
+  btn.disabled = true;
+  btn.textContent = "⏳ 저장 중...";
+  showStatus(`<span class="spinner"></span> SALE 값 변경 + 저장 중...`, "");
+
+  try {
+    const cmdId = await sendCommand("bulkAdjust", {
+      hotelId: __currentMarkupHotelId, mode, value, preview: false
+    });
+    const result = await waitResult(cmdId);
+
+    if (result.status === "done" && result.data) {
+      if (result.data.changed > 0) {
+        showStatus(`✅ ${result.data.changed}개 변경 완료! ${result.data.message || ""}`, "success");
+      } else {
+        showStatus("변경 사항 없음", "");
+      }
+    } else {
+      showStatus(`❌ ${result.data?.error || result.error || "실행 실패"}`, "error");
+    }
+  } catch (e) {
+    showStatus(`❌ 오류: ${e.message}`, "error");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "🚀 실행 (저장)";
+});
+
 // ── 잠금 화면 ──
 function checkLock() {
   const saved = sessionStorage.getItem("hpm_remote_unlocked");
