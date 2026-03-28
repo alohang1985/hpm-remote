@@ -135,7 +135,21 @@ function initDates() {
   }
 }
 
-// ── 크롤링 결과 렌더링 ──
+// ── 방 이름에서 기본 이름 추출 (프로모션/옵션 제거) ──
+function baseRoomName(name) {
+  // "가든 풀 스윗&투어픽라운지 (일반)" → "가든 풀 스윗&투어픽라운지"
+  // "디럭스 룸 (얼리버드 30일 오퍼)" → "디럭스 룸"
+  return (name || "").replace(/\s*\(.*\)\s*$/, "").trim();
+}
+
+function vendorLabel(vid) {
+  if (vid.includes("tourpik") || vid.includes("tp")) return "투어픽";
+  if (vid.includes("peak")) return "피크타임";
+  if (vid.includes("ghost")) return "고스트";
+  return vid;
+}
+
+// ── 크롤링 결과 렌더링 (방 이름 그룹핑) ──
 function renderCrawlResult(data) {
   if (!data || !data.rows) {
     showResult("결과", '<p style="color:#999">데이터 없음</p>');
@@ -143,42 +157,55 @@ function renderCrawlResult(data) {
   }
 
   const rows = Array.isArray(data.rows) ? data.rows : Object.values(data.rows);
-  let html = '<div class="scroll-area">';
 
+  // 방 이름 기본 부분으로 그룹핑 + 벤더별 최저가만 수집
+  const grouped = {};
   rows.forEach((row) => {
-    const name = row.roomName || row.name || "—";
+    const fullName = row.roomName || row.name || "—";
+    const base = baseRoomName(fullName);
+    if (!grouped[base]) grouped[base] = {};
+
     const vp = row.vendorPrices || {};
-    html += `<div class="room-card">
-      <div class="room-name">${name}</div>
-      <div class="room-prices">`;
+    for (const [vid, v] of Object.entries(vp)) {
+      const price = v.priceNumeric || 0;
+      if (price <= 0) continue;
+      // 벤더별 최저가 유지
+      if (!grouped[base][vid] || price < grouped[base][vid].price) {
+        grouped[base][vid] = { price, priceText: v.priceText || "", detail: fullName };
+      }
+    }
+  });
+
+  let html = '<div class="scroll-area">';
+  const roomNames = Object.keys(grouped);
+
+  roomNames.forEach((base) => {
+    const vendors = grouped[base];
+    const vendorEntries = Object.entries(vendors);
+    if (!vendorEntries.length) return;
 
     // 최저가 찾기
     let minPrice = Infinity;
-    Object.values(vp).forEach((v) => {
-      const p = v.priceNumeric || 0;
-      if (p > 0 && p < minPrice) minPrice = p;
-    });
+    vendorEntries.forEach(([, v]) => { if (v.price < minPrice) minPrice = v.price; });
 
-    for (const [vid, v] of Object.entries(vp)) {
-      const price = v.priceNumeric || 0;
-      const priceStr = price > 0 ? price.toLocaleString() + "원" : "—";
-      const isMin = price === minPrice && price > 0;
-      const diff = price > 0 && minPrice < Infinity && price !== minPrice
-        ? ((price - minPrice) > 0 ? `+${(price - minPrice).toLocaleString()}` : (price - minPrice).toLocaleString())
+    html += `<div class="room-card">
+      <div class="room-name">${base}</div>
+      <div class="room-prices">`;
+
+    vendorEntries.forEach(([vid, v]) => {
+      const priceStr = v.price.toLocaleString() + "원";
+      const isMin = v.price === minPrice;
+      const diff = v.price !== minPrice
+        ? `+${(v.price - minPrice).toLocaleString()}`
         : "";
-      const diffClass = diff.startsWith("+") ? "price-diff-up" : "price-diff-down";
-
-      let label = vid;
-      if (vid.includes("tourpik") || vid.includes("tp")) label = "투어픽";
-      else if (vid.includes("peak")) label = "피크타임";
-      else if (vid.includes("ghost")) label = "고스트";
+      const diffClass = diff ? "price-diff-up" : "";
 
       html += `<div class="room-price-row">
-        <span class="vendor-label">${label}</span>
+        <span class="vendor-label">${vendorLabel(vid)}</span>
         <span class="vendor-price ${isMin ? "price-tp" : ""}">${priceStr}</span>
         <span class="vendor-diff ${diffClass}">${diff}</span>
       </div>`;
-    }
+    });
 
     html += `</div></div>`;
   });
@@ -192,7 +219,7 @@ function renderCrawlResult(data) {
     : "";
 
   showResult(
-    `📊 ${data.hotelName || "크롤링 결과"} (${rows.length}개 룸)`,
+    `📊 ${data.hotelName || "결과"} (${roomNames.length}개 룸)`,
     (vendorSummary ? `<p style="font-size:11px;color:#999;margin-bottom:8px">${vendorSummary}</p>` : "") + html
   );
 }
